@@ -187,11 +187,22 @@ class MonitoringWidget(QWidget):
         self.brew_color_r = 134 + 121 * self.temperature / 100.
         self.brew_color_g = 134 + 121 * self.temperature / 100.
         self.brew_color_b = 0 + 121 * self.temperature / 100.
-        self.brew_color = QColor(self.brew_color_r, self.brew_color_g, self.brew_color_b)
+        self.brew_color = QColor(int(self.brew_color_r), int(self.brew_color_g), int(self.brew_color_b))
 
         self.temperature_change = temperature_change
         self.temperature += temperature_change
         self.current_ph += ph_change
+
+        if 64. < self.temperature < 70. and 4.8 < self.current_ph < 5.8:
+            self.current_kind = "Grodziskie"
+        elif 40. < self.temperature < 100. and 4.0 < self.current_ph < 4.8:
+            self.current_kind = "Weissbier"
+        elif 70. < self.temperature < 100. and 4.8 < self.current_ph < 5.8:
+            self.current_kind = "Pale Ale"
+        elif 40. < self.temperature < 64. and 4.0 < self.current_ph < 4.8:
+            self.current_kind = "India Pale Ale"
+        elif 70. < self.temperature < 100. and 2.4 < self.current_ph < 4.0:
+            self.current_kind = "Pilsner"
 
     def attention_check(self):
         self.attention_widget = AttentionWidget()
