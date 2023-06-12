@@ -1,0 +1,75 @@
+<?xml version="1.0" ?>
+<enemy>
+  <enemy>
+    <timestamp>2023-05-08 01:23:00.259164</timestamp>
+    <type>7</type>
+    <x_pos>16.0</x_pos>
+    <y_pos>32.0</y_pos>
+    <speed>None</speed>
+    <orientation>None</orientation>
+  </enemy>
+  <enemy>
+    <timestamp>2023-05-08 01:23:00.259339</timestamp>
+    <type>7</type>
+    <x_pos>0.0</x_pos>
+    <y_pos>128.0</y_pos>
+    <speed>16</speed>
+    <orientation>None</orientation>
+  </enemy>
+  <enemy>
+    <timestamp>2023-05-08 01:23:00.259351</timestamp>
+    <type>7</type>
+    <x_pos>288.0</x_pos>
+    <y_pos>288.0</y_pos>
+    <speed>None</speed>
+    <orientation>None</orientation>
+  </enemy>
+  <enemy>
+    <timestamp>2023-05-08 01:23:00.259425</timestamp>
+    <type>7</type>
+    <x_pos>208.0</x_pos>
+    <y_pos>256.0</y_pos>
+    <speed>8</speed>
+    <orientation>None</orientation>
+  </enemy>
+  <enemy>
+    <timestamp>2023-05-08 01:23:00.259567</timestamp>
+    <type>7</type>
+    <x_pos>64.0</x_pos>
+    <y_pos>48.0</y_pos>
+    <speed>16</speed>
+    <orientation>vertical</orientation>
+  </enemy>
+  <enemy>
+    <timestamp>2023-05-08 01:23:00.259630</timestamp>
+    <type>7</type>
+    <x_pos>48.0</x_pos>
+    <y_pos>32.0</y_pos>
+    <speed>4</speed>
+    <orientation>horizontal</orientation>
+  </enemy>
+  <enemy>
+    <timestamp>2023-05-08 01:23:00.259686</timestamp>
+    <type>7</type>
+    <x_pos>64.0</x_pos>
+    <y_pos>208.0</y_pos>
+    <speed>4</speed>
+    <orientation>None</orientation>
+  </enemy>
+  <enemy>
+    <timestamp>2023-05-08 01:23:00.259755</timestamp>
+    <type>7</type>
+    <x_pos>0.0</x_pos>
+    <y_pos>200.0</y_pos>
+    <speed>-8</speed>
+    <orientation>vertical</orientation>
+  </enemy>
+  <enemy>
+    <timestamp>2023-05-08 01:23:00.259809</timestamp>
+    <type>7</type>
+    <x_pos>48.0</x_pos>
+    <y_pos>32.0</y_pos>
+    <speed>16</speed>
+    <orientation>horizontal</orientation>
+  </enemy>
+</enemy>
