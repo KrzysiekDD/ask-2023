@@ -1366,7 +1366,7 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "Symulator Mikroprocesora"))
         self.Registers.setText(_translate("MainWindow", "Rejestry"))
-        self.AXregister.setText(_translate("MainWindow", "AX- Akumulator"))
+        self.AXregister.setText(_translate("MainWindow", "AX - Akumulator"))
         self.AH.setText(_translate("MainWindow", "AH"))
         self.AL.setText(_translate("MainWindow", "AL"))
         self.BL.setText(_translate("MainWindow", "BL"))
