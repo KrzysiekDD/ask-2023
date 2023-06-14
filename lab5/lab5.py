@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QTimer
+from PyQt5.QtGui import QPixmap
 import pickle
 import datetime
 import copy
@@ -28,17 +29,16 @@ class Ui_MainWindow(object):
         self.delay = 1000
         self.Error = False
 
-    def showPopup(self):
-        msg = QMessageBox()
-        msg.setWindowTitle("Interrupts - manual")
-        msg.setText("LIST OF INTERRUPTS: \n\n INT11 - Cursor \n AH: #10, #11 \n\n INT13 - Keyboard \n AH: #10, #11 "
-                    "\n\n INT15 - Time\n AH: #10, #11, #12, #13 \n\n INT17 - Memory \n AH: #10, #11, #12")
-        msg.setIcon(QMessageBox.Question)
-        msg.setStandardButtons(QMessageBox.Ok)
-        msg.setDefaultButton(QMessageBox.Ok)
-        msg.setDetailedText("Detailed list of interrupts is attached as a txt file")
-
-        msg.exec_()
+    # def showPopup(self):
+    #     msg = QMessageBox()
+    #     msg.setWindowTitle("Interrupts - manual")
+    #     msg.setText("LIST OF INTERRUPTS: \n\n INT11 - Cursor \n AH: #10, #11 \n\n INT13 - Keyboard \n AH: #10, #11 "
+    #                 "\n\n INT15 - Time\n AH: #10, #11, #12, #13 \n\n INT17 - Memory \n AH: #10, #11, #12")
+    #     msg.setIcon(QMessageBox.Question)
+    #     msg.setStandardButtons(QMessageBox.Ok)
+    #     msg.setDefaultButton(QMessageBox.Ok)
+    #     msg.setDetailedText("Detailed list of interrupts is attached as a txt file")
+    #     msg.exec_()
 
     def onPress(self, key):
         try:
@@ -46,28 +46,28 @@ class Ui_MainWindow(object):
         except AttributeError:
             pass
 
-    def setDate(self):
-        now = datetime.datetime.now()
-        date = str(now)[0:10]
-        time = str(now)[11:19]
-        self.Date.setText(date)
-        self.app_hour = time[0:2]
-        self.app_mins = time[3:5]
-        secs = time[6:8]
-        self.Hour.display(self.app_hour)
-        self.Minute.display(self.app_mins)
-        sleep(60 - int(secs))
-        while True:
-            self.app_mins = str(int(self.app_mins) + 1)
-            if int(self.app_hour) > 23:
-                self.app_mins = "0"
-            if int(self.app_mins) > 59:
-                self.app_mins = "0"
-                self.app_hour = str(int(self.app_hour) + 1)
-
-            self.Hour.display(self.app_hour)
-            self.Minute.display(self.app_mins)
-            sleep(60)
+    # def setDate(self):
+    #     now = datetime.datetime.now()
+    #     date = str(now)[0:10]
+    #     time = str(now)[11:19]
+    #     self.Date.setText(date)
+    #     self.app_hour = time[0:2]
+    #     self.app_mins = time[3:5]
+    #     secs = time[6:8]
+    #     self.Hour.display(self.app_hour)
+    #     self.Minute.display(self.app_mins)
+    #     sleep(60 - int(secs))
+    #     while True:
+    #         self.app_mins = str(int(self.app_mins) + 1)
+    #         if int(self.app_hour) > 23:
+    #             self.app_mins = "0"
+    #         if int(self.app_mins) > 59:
+    #             self.app_mins = "0"
+    #             self.app_hour = str(int(self.app_hour) + 1)
+    #
+    #         self.Hour.display(self.app_hour)
+    #         self.Minute.display(self.app_mins)
+    #         sleep(60)
 
     def updateDecimal(self, num, decimal, trig):
         value = int(decimal.text())
@@ -283,85 +283,85 @@ class Ui_MainWindow(object):
 
             self.printProgramLine(num, instr, dest, dot, src)
 
-    def interrupt(self, itter_num):
-        if itter_num == "11":
-            if int(self.dec["AH"].text()) == 10:
-                x = int(self.dec["BH"].text()) * 256 + int(self.dec["BL"].text())
-                y = int(self.dec["DH"].text()) * 256 + int(self.dec["DL"].text())
-                if x < pag.size()[0] and y < pag.size()[1]:
-                    pag.moveTo(x, y)
-                else:
-                    self.Msg.setText("INT" + itter_num + "Error: The screen size cannot be exceeded.")
-                    self.handleError()
-            elif int(self.dec["AH"].text()) == 11:
-                x = pag.position()[0]
-                y = pag.position()[1]
-                self.operation("BX", self.getBinary(x))
-                self.operation("DX", self.getBinary(y))
-
-        elif itter_num == "13":
-            if int(self.dec["AH"].text()) == 10:
-                try:
-                    self.operation("BL", self.getBinary(ord(self.key_pressed)))
-                except TypeError:
-                    self.operation("BL", self.getBinary(0))
-            if int(self.dec["AH"].text()) == 11:
-                self.Msg.setText(chr(int(self.dec["BL"].text())))
-
-        elif itter_num == "15":
-            if int(self.dec["AH"].text()) == 10:
-                hour = self.dec["CH"].text()
-                mins = self.dec["CL"].text()
-                if 0 <= int(hour) < 24 and 0 <= int(mins) < 60:
-                    self.app_hour = hour
-                    self.app_mins = mins
-                    self.Hour.display(hour)
-                    self.Minute.display(mins)
-                else:
-                    self.Msg.setText("INT" + itter_num + " - Error: Too big number in CX register")
-                    self.handleError()
-            elif int(self.dec["AH"].text()) == 11:
-                hour = int(self.Hour.value())
-                mins = int(self.Minute.value())
-                self.operation("CH", self.getBinary(hour))
-                self.operation("CL", self.getBinary(mins))
-
-            elif int(self.dec["AH"].text()) == 12:
-                time = datetime.datetime.now()
-                now = datetime.datetime.now()
-                date = str(now)[0:10]
-                time = str(now)[11:19]
-                self.Date.setText(date)
-                self.app_hour = time[0:2]
-                self.app_mins = time[3:5]
-                self.Hour.display(self.app_hour)
-                self.Minute.display(self.app_mins)
-            elif int(self.dec["AH"].text()) == 13:
-                a = int(self.dec["CH"].text())
-                b = int(self.dec["CL"].text())
-                sleep(a * 0.1 + b * 0.01)
-
-        elif itter_num == "17":
-            path = "/"
-            total, used, free = shutil.disk_usage(path)
-            if int(self.dec["AH"].text()) == 10:
-                free = int((free / (1024 * 1024 * 1024)))
-                self.operation("DX", self.getBinary(free))
-            elif int(self.dec["AH"].text()) == 11:
-                used = int((used / (1024 * 1024 * 1024)))
-                self.operation("DX", self.getBinary(used))
-            elif int(self.dec["AH"].text()) == 12:
-                total = int((total / (1024 * 1024 * 1024)))
-                self.operation("DX", self.getBinary(total))
-
-    def addInterrupt(self):
-        if not self.step_mode:
-            num = self.text_length.pop(0)
-            instr = self.Interrupt.currentText()
-            dest = None
-            src = None
-            self.instr_list.append([instr, dest, src])
-            self.printProgramLine(num, instr, dest, None, src)
+    # def interrupt(self, itter_num):
+    #     if itter_num == "11":
+    #         if int(self.dec["AH"].text()) == 10:
+    #             x = int(self.dec["BH"].text()) * 256 + int(self.dec["BL"].text())
+    #             y = int(self.dec["DH"].text()) * 256 + int(self.dec["DL"].text())
+    #             if x < pag.size()[0] and y < pag.size()[1]:
+    #                 pag.moveTo(x, y)
+    #             else:
+    #                 self.Msg.setText("INT" + itter_num + "Error: The screen size cannot be exceeded.")
+    #                 self.handleError()
+    #         elif int(self.dec["AH"].text()) == 11:
+    #             x = pag.position()[0]
+    #             y = pag.position()[1]
+    #             self.operation("BX", self.getBinary(x))
+    #             self.operation("DX", self.getBinary(y))
+    #
+    #     elif itter_num == "13":
+    #         if int(self.dec["AH"].text()) == 10:
+    #             try:
+    #                 self.operation("BL", self.getBinary(ord(self.key_pressed)))
+    #             except TypeError:
+    #                 self.operation("BL", self.getBinary(0))
+    #         if int(self.dec["AH"].text()) == 11:
+    #             self.Msg.setText(chr(int(self.dec["BL"].text())))
+    #
+    #     elif itter_num == "15":
+    #         if int(self.dec["AH"].text()) == 10:
+    #             hour = self.dec["CH"].text()
+    #             mins = self.dec["CL"].text()
+    #             if 0 <= int(hour) < 24 and 0 <= int(mins) < 60:
+    #                 self.app_hour = hour
+    #                 self.app_mins = mins
+    #                 self.Hour.display(hour)
+    #                 self.Minute.display(mins)
+    #             else:
+    #                 self.Msg.setText("INT" + itter_num + " - Error: Too big number in CX register")
+    #                 self.handleError()
+    #         elif int(self.dec["AH"].text()) == 11:
+    #             hour = int(self.Hour.value())
+    #             mins = int(self.Minute.value())
+    #             self.operation("CH", self.getBinary(hour))
+    #             self.operation("CL", self.getBinary(mins))
+    #
+    #         elif int(self.dec["AH"].text()) == 12:
+    #             time = datetime.datetime.now()
+    #             now = datetime.datetime.now()
+    #             date = str(now)[0:10]
+    #             time = str(now)[11:19]
+    #             self.Date.setText(date)
+    #             self.app_hour = time[0:2]
+    #             self.app_mins = time[3:5]
+    #             self.Hour.display(self.app_hour)
+    #             self.Minute.display(self.app_mins)
+    #         elif int(self.dec["AH"].text()) == 13:
+    #             a = int(self.dec["CH"].text())
+    #             b = int(self.dec["CL"].text())
+    #             sleep(a * 0.1 + b * 0.01)
+    #
+    #     elif itter_num == "17":
+    #         path = "/"
+    #         total, used, free = shutil.disk_usage(path)
+    #         if int(self.dec["AH"].text()) == 10:
+    #             free = int((free / (1024 * 1024 * 1024)))
+    #             self.operation("DX", self.getBinary(free))
+    #         elif int(self.dec["AH"].text()) == 11:
+    #             used = int((used / (1024 * 1024 * 1024)))
+    #             self.operation("DX", self.getBinary(used))
+    #         elif int(self.dec["AH"].text()) == 12:
+    #             total = int((total / (1024 * 1024 * 1024)))
+    #             self.operation("DX", self.getBinary(total))
+    #
+    # def addInterrupt(self):
+    #     if not self.step_mode:
+    #         num = self.text_length.pop(0)
+    #         instr = self.Interrupt.currentText()
+    #         dest = None
+    #         src = None
+    #         self.instr_list.append([instr, dest, src])
+    #         self.printProgramLine(num, instr, dest, None, src)
 
     def exec(self):
         if self.instr_list and not self.step_mode:
@@ -422,14 +422,19 @@ class Ui_MainWindow(object):
 
         elif self.instr_list:
             self.step_mode = True
-            self.Msg.setText("Step mode is ON")
+            self.Msg.setText("Praca krokowa włączona")
             self.instr_list_copy = copy.deepcopy(self.instr_list)
             self.text_length = [x for x in range(1, 100)]
             self.textEdit.setText("")
             curr_instr = self.instr_list_copy.pop(0)
             self.step(curr_instr)
 
+
     def setupUi(self, MainWindow):
+        # MainWindow.setStyleSheet("background-image: url(background_resized.png);")
+        MainWindow.setStyleSheet(
+            "QMainWindow {background-image: url(background_resized.png); background-repeat: no-repeat;}")
+        MainWindow.setWindowTitle("Microprocessor simulator")
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1081, 659)
         font = QtGui.QFont()
@@ -445,14 +450,16 @@ class Ui_MainWindow(object):
         font.setWeight(75)
         self.Registers.setFont(font)
         self.Registers.setObjectName("Registers")
+        self.Registers.setStyleSheet("color: white;")
         self.AXregister = QtWidgets.QLabel(self.centralwidget)
-        self.AXregister.setGeometry(QtCore.QRect(110, 50, 91, 36))
+        self.AXregister.setGeometry(QtCore.QRect(110, 50, 91, 42))
         font = QtGui.QFont()
         font.setPointSize(8)
         font.setBold(True)
         font.setWeight(75)
         self.AXregister.setFont(font)
         self.AXregister.setObjectName("AXregister")
+        self.AXregister.setStyleSheet("color: white;")
         self.AH = QtWidgets.QLabel(self.centralwidget)
         self.AH.setGeometry(QtCore.QRect(30, 102, 19, 16))
         font = QtGui.QFont()
@@ -461,6 +468,7 @@ class Ui_MainWindow(object):
         font.setWeight(75)
         self.AH.setFont(font)
         self.AH.setObjectName("AH")
+        self.AH.setStyleSheet("color: white;")
         self.AL = QtWidgets.QLabel(self.centralwidget)
         self.AL.setGeometry(QtCore.QRect(30, 145, 17, 16))
         font = QtGui.QFont()
@@ -469,6 +477,7 @@ class Ui_MainWindow(object):
         font.setWeight(75)
         self.AL.setFont(font)
         self.AL.setObjectName("AL")
+        self.AL.setStyleSheet("color: white;")
         self.BL = QtWidgets.QLabel(self.centralwidget)
         self.BL.setGeometry(QtCore.QRect(30, 281, 16, 16))
         font = QtGui.QFont()
@@ -477,14 +486,16 @@ class Ui_MainWindow(object):
         font.setWeight(75)
         self.BL.setFont(font)
         self.BL.setObjectName("BL")
+        self.BL.setStyleSheet("color: white;")
         self.BX = QtWidgets.QLabel(self.centralwidget)
-        self.BX.setGeometry(QtCore.QRect(110, 190, 91, 36))
+        self.BX.setGeometry(QtCore.QRect(110, 190, 91, 42))
         font = QtGui.QFont()
         font.setPointSize(8)
         font.setBold(True)
         font.setWeight(75)
         self.BX.setFont(font)
         self.BX.setObjectName("BX")
+        self.BX.setStyleSheet("color: white;")
         self.BH = QtWidgets.QLabel(self.centralwidget)
         self.BH.setGeometry(QtCore.QRect(30, 239, 17, 16))
         font = QtGui.QFont()
@@ -493,6 +504,7 @@ class Ui_MainWindow(object):
         font.setWeight(75)
         self.BH.setFont(font)
         self.BH.setObjectName("BH")
+        self.BH.setStyleSheet("color: white;")
         self.CL = QtWidgets.QLabel(self.centralwidget)
         self.CL.setGeometry(QtCore.QRect(30, 428, 16, 16))
         font = QtGui.QFont()
@@ -501,14 +513,16 @@ class Ui_MainWindow(object):
         font.setWeight(75)
         self.CL.setFont(font)
         self.CL.setObjectName("CL")
+        self.CL.setStyleSheet("color: white;")
         self.CX = QtWidgets.QLabel(self.centralwidget)
-        self.CX.setGeometry(QtCore.QRect(110, 330, 81, 36))
+        self.CX.setGeometry(QtCore.QRect(110, 330, 81, 42))
         font = QtGui.QFont()
         font.setPointSize(8)
         font.setBold(True)
         font.setWeight(75)
         self.CX.setFont(font)
         self.CX.setObjectName("CX")
+        self.CX.setStyleSheet("color: white;")
         self.CH = QtWidgets.QLabel(self.centralwidget)
         self.CH.setGeometry(QtCore.QRect(30, 386, 17, 16))
         font = QtGui.QFont()
@@ -517,6 +531,7 @@ class Ui_MainWindow(object):
         font.setWeight(75)
         self.CH.setFont(font)
         self.CH.setObjectName("CH")
+        self.CH.setStyleSheet("color: white;")
         self.DL = QtWidgets.QLabel(self.centralwidget)
         self.DL.setGeometry(QtCore.QRect(30, 565, 16, 16))
         font = QtGui.QFont()
@@ -525,14 +540,16 @@ class Ui_MainWindow(object):
         font.setWeight(75)
         self.DL.setFont(font)
         self.DL.setObjectName("DL")
+        self.DL.setStyleSheet("color: white;")
         self.DX = QtWidgets.QLabel(self.centralwidget)
-        self.DX.setGeometry(QtCore.QRect(110, 470, 91, 37))
+        self.DX.setGeometry(QtCore.QRect(110, 470, 91, 42))
         font = QtGui.QFont()
         font.setPointSize(8)
         font.setBold(True)
         font.setWeight(75)
         self.DX.setFont(font)
         self.DX.setObjectName("DX")
+        self.DX.setStyleSheet("color: white;")
         self.DH = QtWidgets.QLabel(self.centralwidget)
         self.DH.setGeometry(QtCore.QRect(30, 523, 18, 16))
         font = QtGui.QFont()
@@ -541,6 +558,7 @@ class Ui_MainWindow(object):
         font.setWeight(75)
         self.DH.setFont(font)
         self.DH.setObjectName("DH")
+        self.DH.setStyleSheet("color: white;")
         self.buttons = {"AH": [], "AL": [], "BH": [], "BL": [], "CH": [], "CL": [], "DH": [], "DL": []}
         self.dec = {"AX": 0, "BX": 0, "CX": 0, "DX": 0, "AH": 0, "AL": 0, "BH": 0, "BL": 0, "CH": 0, "CL": 0, "DH": 0,
                     "DL": 0, "opt": 0}
@@ -574,6 +592,7 @@ class Ui_MainWindow(object):
         font.setWeight(75)
         self.Program.setFont(font)
         self.Program.setObjectName("Program")
+        self.Program.setStyleSheet("color: white;")
         self.restAH = QtWidgets.QPushButton(self.centralwidget)
         self.restAH.setGeometry(QtCore.QRect(230, 100, 51, 21))
         self.restAH.setObjectName("restAH")
@@ -585,6 +604,7 @@ class Ui_MainWindow(object):
         font.setWeight(75)
         self.Komendy.setFont(font)
         self.Komendy.setObjectName("Komendy")
+        self.Komendy.setStyleSheet("color: white;")
         self.Clear = QtWidgets.QPushButton(self.centralwidget)
         self.Clear.setGeometry(QtCore.QRect(680, 350, 111, 28))
         self.Clear.setObjectName("Clear")
@@ -643,8 +663,6 @@ class Ui_MainWindow(object):
         self.instr.addItem("")
         self.instr.addItem("")
         self.instr.addItem("")
-        self.instr.addItem("")
-        self.instr.addItem("")
         self.opt2 = QtWidgets.QLineEdit(self.centralwidget)
         self.opt2.setGeometry(QtCore.QRect(610, 130, 71, 22))
         self.opt2.setObjectName("opt2")
@@ -655,6 +673,7 @@ class Ui_MainWindow(object):
         font.setBold(True)
         font.setWeight(75)
         self.Decimal2.setFont(font)
+        self.Decimal2.setStyleSheet("color: white;")
         self.Decimal2.setObjectName("Decimal2")
         self.dec["AH"] = QtWidgets.QLineEdit(self.centralwidget)
         self.dec["AH"].setGeometry(QtCore.QRect(290, 100, 71, 22))
@@ -745,88 +764,98 @@ class Ui_MainWindow(object):
         font.setWeight(75)
         self.Decimal1.setFont(font)
         self.Decimal1.setObjectName("Decimal1")
-        self.InteruptLabel = QtWidgets.QLabel(self.centralwidget)
-        self.InteruptLabel.setGeometry(QtCore.QRect(820, 10, 121, 24))
+        self.Decimal1.setStyleSheet("color: white;")
+        self.HelpLabel = QtWidgets.QLabel(self.centralwidget)
+        self.HelpLabel.setGeometry(QtCore.QRect(820, 10, 121, 24))
         font = QtGui.QFont()
         font.setPointSize(12)
         font.setBold(True)
         font.setWeight(75)
-        self.InteruptLabel.setFont(font)
-        self.InteruptLabel.setObjectName("InteruptLabel")
+        self.HelpLabel.setFont(font)
+        self.HelpLabel.setObjectName("HelpLabel")
+        self.HelpLabel.setStyleSheet("color: white;")
+
         self.line_4 = QtWidgets.QFrame(self.centralwidget)
         self.line_4.setGeometry(QtCore.QRect(940, 20, 121, 21))
         self.line_4.setFrameShape(QtWidgets.QFrame.HLine)
         self.line_4.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.line_4.setObjectName("line_4")
-        self.Interrupt = QtWidgets.QComboBox(self.centralwidget)
-        self.Interrupt.setGeometry(QtCore.QRect(840, 100, 73, 22))
-        self.Interrupt.setObjectName("Interrupt")
-        self.Interrupt.addItem("")
-        self.Interrupt.addItem("")
-        self.Interrupt.addItem("")
-        self.Interrupt.addItem("")
-        self.AddInterrupt = QtWidgets.QPushButton(self.centralwidget)
-        self.AddInterrupt.setGeometry(QtCore.QRect(950, 90, 81, 41))
-        self.AddInterrupt.setObjectName("AddInterrupt")
-        self.line_5 = QtWidgets.QFrame(self.centralwidget)
-        self.line_5.setGeometry(QtCore.QRect(890, 190, 171, 21))
-        self.line_5.setFrameShape(QtWidgets.QFrame.HLine)
-        self.line_5.setFrameShadow(QtWidgets.QFrame.Sunken)
-        self.line_5.setObjectName("line_5")
-        self.StackLabel = QtWidgets.QLabel(self.centralwidget)
-        self.StackLabel.setGeometry(QtCore.QRect(820, 180, 121, 24))
-        font = QtGui.QFont()
-        font.setPointSize(12)
-        font.setBold(True)
-        font.setWeight(75)
-        self.StackLabel.setFont(font)
-        self.StackLabel.setObjectName("StackLabel")
-        self.StackText = QtWidgets.QTextEdit(self.centralwidget)
-        self.StackText.setGeometry(QtCore.QRect(830, 240, 221, 181))
-        self.StackText.setObjectName("StackText")
-        self.Hour = QtWidgets.QLCDNumber(self.centralwidget)
-        self.Hour.setGeometry(QtCore.QRect(880, 500, 51, 41))
-        font = QtGui.QFont()
-        font.setPointSize(30)
-        font.setBold(True)
-        font.setWeight(75)
-        self.Hour.setFont(font)
-        self.Hour.setSmallDecimalPoint(False)
-        self.Hour.setDigitCount(2)
-        self.Hour.setProperty("value", 15.0)
-        self.Hour.setProperty("intValue", 15)
-        self.Hour.setObjectName("Hour")
-        self.label = QtWidgets.QLabel(self.centralwidget)
-        self.label.setGeometry(QtCore.QRect(940, 500, 16, 41))
-        font = QtGui.QFont()
-        font.setPointSize(20)
-        self.label.setFont(font)
-        self.label.setObjectName("label")
-        self.Minute = QtWidgets.QLCDNumber(self.centralwidget)
-        self.Minute.setGeometry(QtCore.QRect(960, 500, 51, 41))
-        font = QtGui.QFont()
-        font.setPointSize(20)
-        font.setBold(True)
-        font.setWeight(75)
-        self.Minute.setFont(font)
-        self.Minute.setSmallDecimalPoint(False)
-        self.Minute.setDigitCount(2)
-        self.Minute.setProperty("value", 15.0)
-        self.Minute.setProperty("intValue", 15)
-        self.Minute.setObjectName("Minute")
-        self.TimeLabel = QtWidgets.QLabel(self.centralwidget)
-        self.TimeLabel.setGeometry(QtCore.QRect(820, 450, 131, 24))
-        font = QtGui.QFont()
-        font.setPointSize(12)
-        font.setBold(True)
-        font.setWeight(75)
-        self.TimeLabel.setFont(font)
-        self.TimeLabel.setObjectName("TimeLabel")
-        self.line_6 = QtWidgets.QFrame(self.centralwidget)
-        self.line_6.setGeometry(QtCore.QRect(880, 460, 191, 21))
-        self.line_6.setFrameShape(QtWidgets.QFrame.HLine)
-        self.line_6.setFrameShadow(QtWidgets.QFrame.Sunken)
-        self.line_6.setObjectName("line_6")
+
+        self.Picture = QtWidgets.QLabel(self.centralwidget)
+        self.Picture.setGeometry(QtCore.QRect(840, 100, 146+100, int(176*2.5)))#, 73, 22))
+
+        pixmap = QPixmap("microprocessor_resized.png")
+        pixmap.scaled(self.Picture.width(), self.Picture.height(), QtCore.Qt.KeepAspectRatio)
+        self.Picture.setPixmap(pixmap)
+
+        # self.Interrupt.setObjectName("Interrupt")
+        # self.Interrupt.addItem("")
+        # self.Interrupt.addItem("")
+        # self.Interrupt.addItem("")
+        # self.Interrupt.addItem("")
+        # self.AddInterrupt = QtWidgets.QPushButton(self.centralwidget)
+        # self.AddInterrupt.setGeometry(QtCore.QRect(950, 90, 81, 41))
+        # self.AddInterrupt.setObjectName("AddInterrupt")
+
+        # self.line_5 = QtWidgets.QFrame(self.centralwidget)
+        # self.line_5.setGeometry(QtCore.QRect(890, 190, 171, 21))
+        # self.line_5.setFrameShape(QtWidgets.QFrame.HLine)
+        # self.line_5.setFrameShadow(QtWidgets.QFrame.Sunken)
+        # self.line_5.setObjectName("line_5")
+        # self.StackLabel = QtWidgets.QLabel(self.centralwidget)
+        # self.StackLabel.setGeometry(QtCore.QRect(820, 180, 121, 24))
+        # font = QtGui.QFont()
+        # font.setPointSize(12)
+        # font.setBold(True)
+        # font.setWeight(75)
+        # self.StackLabel.setFont(font)
+        # self.StackLabel.setObjectName("StackLabel")
+        # self.StackText = QtWidgets.QTextEdit(self.centralwidget)
+        # self.StackText.setGeometry(QtCore.QRect(830, 240, 221, 181))
+        # self.StackText.setObjectName("StackText")
+        # self.Hour = QtWidgets.QLCDNumber(self.centralwidget)
+        # self.Hour.setGeometry(QtCore.QRect(880, 500, 51, 41))
+        # font = QtGui.QFont()
+        # font.setPointSize(30)
+        # font.setBold(True)
+        # font.setWeight(75)
+        # self.Hour.setFont(font)
+        # self.Hour.setSmallDecimalPoint(False)
+        # self.Hour.setDigitCount(2)
+        # self.Hour.setProperty("value", 15.0)
+        # self.Hour.setProperty("intValue", 15)
+        # self.Hour.setObjectName("Hour")
+        # self.label = QtWidgets.QLabel(self.centralwidget)
+        # self.label.setGeometry(QtCore.QRect(940, 500, 16, 41))
+        # font = QtGui.QFont()
+        # font.setPointSize(20)
+        # self.label.setFont(font)
+        # self.label.setObjectName("label")
+        # self.Minute = QtWidgets.QLCDNumber(self.centralwidget)
+        # self.Minute.setGeometry(QtCore.QRect(960, 500, 51, 41))
+        # font = QtGui.QFont()
+        # font.setPointSize(20)
+        # font.setBold(True)
+        # font.setWeight(75)
+        # self.Minute.setFont(font)
+        # self.Minute.setSmallDecimalPoint(False)
+        # self.Minute.setDigitCount(2)
+        # self.Minute.setProperty("value", 15.0)
+        # self.Minute.setProperty("intValue", 15)
+        # self.Minute.setObjectName("Minute")
+        # self.TimeLabel = QtWidgets.QLabel(self.centralwidget)
+        # self.TimeLabel.setGeometry(QtCore.QRect(820, 450, 131, 24))
+        # font = QtGui.QFont()
+        # font.setPointSize(12)
+        # font.setBold(True)
+        # font.setWeight(75)
+        # self.TimeLabel.setFont(font)
+        # self.TimeLabel.setObjectName("TimeLabel")
+        # self.line_6 = QtWidgets.QFrame(self.centralwidget)
+        # self.line_6.setGeometry(QtCore.QRect(880, 460, 191, 21))
+        # self.line_6.setFrameShape(QtWidgets.QFrame.HLine)
+        # self.line_6.setFrameShadow(QtWidgets.QFrame.Sunken)
+        # self.line_6.setObjectName("line_6")
 
         self.Info = QtWidgets.QLabel(self.centralwidget)
         self.Info.setGeometry(QtCore.QRect(410, 580, 111, 16))
@@ -836,6 +865,7 @@ class Ui_MainWindow(object):
         font.setWeight(75)
         self.Info.setFont(font)
         self.Info.setObjectName("Info")
+        self.Info.setStyleSheet("color: white;")
 
         self.Msg = QtWidgets.QLabel(self.centralwidget)
         self.Msg.setGeometry(QtCore.QRect(440, 580, 400, 16))
@@ -846,6 +876,7 @@ class Ui_MainWindow(object):
         font.setWeight(75)
         self.Msg.setFont(font)
         self.Msg.setObjectName("Msg")
+        self.Msg.setStyleSheet("color: white;")
 
         self.Date = QtWidgets.QLabel(self.centralwidget)
         self.Date.setGeometry(QtCore.QRect(900, 560, 111, 16))
@@ -853,17 +884,20 @@ class Ui_MainWindow(object):
         font.setPointSize(12)
         self.Date.setFont(font)
         self.Date.setObjectName("Date")
+        self.Date.setStyleSheet("color: white;")
+
         MainWindow.setCentralWidget(self.centralwidget)
-        self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1081, 23))
-        self.menubar.setObjectName("menubar")
-        self.menuOpen_interrupts_description = QtWidgets.QMenu(self.menubar)
-        self.menuOpen_interrupts_description.setObjectName("menuOpen_interrupts_description")
-        MainWindow.setMenuBar(self.menubar)
-        self.statusbar = QtWidgets.QStatusBar(MainWindow)
-        self.statusbar.setObjectName("statusbar")
-        MainWindow.setStatusBar(self.statusbar)
-        self.menubar.addAction(self.menuOpen_interrupts_description.menuAction())
+        # self.menubar = QtWidgets.QMenuBar(MainWindow)
+        # self.menubar.setGeometry(QtCore.QRect(0, 0, 1081, 23))
+        # self.menubar.setObjectName("menubar")
+
+        # self.menuOpen_interrupts_description = QtWidgets.QMenu(self.menubar)
+        # self.menuOpen_interrupts_description.setObjectName("menuOpen_interrupts_description")
+        # MainWindow.setMenuBar(self.menubar)
+        # self.statusbar = QtWidgets.QStatusBar(MainWindow)
+        # self.statusbar.setObjectName("statusbar")
+        # MainWindow.setStatusBar(self.statusbar)
+        # self.menubar.addAction(self.menuOpen_interrupts_description.menuAction())
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -1267,9 +1301,9 @@ class Ui_MainWindow(object):
             lambda: self.addInstr()
         )
 
-        self.AddInterrupt.clicked.connect(
-            lambda: self.addInterrupt()
-        )
+        # self.AddInterrupt.clicked.connect(
+        #     lambda: self.addInterrupt()
+        # )
 
         self.Execute.clicked.connect(
             lambda: self.exec()
@@ -1320,29 +1354,29 @@ class Ui_MainWindow(object):
             lambda: self.ExecuteStep.click()
         )
 
-        self.menuOpen_interrupts_description.aboutToShow.connect(
-            lambda: self.showPopup()
-        )
+        # self.menuOpen_interrupts_description.aboutToShow.connect(
+        #     lambda: self.showPopup()
+        # )
 
-        global t
-        t = Timer(0, self.setDate)
-        t.start()
+        # global t
+        # t = Timer(0, self.setDate)
+        # t.start()
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        self.Registers.setText(_translate("MainWindow", "Registers"))
-        self.AXregister.setText(_translate("MainWindow", "AX Register"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "Symulator Mikroprocesora"))
+        self.Registers.setText(_translate("MainWindow", "Rejestry"))
+        self.AXregister.setText(_translate("MainWindow", "AX- Akumulator"))
         self.AH.setText(_translate("MainWindow", "AH"))
         self.AL.setText(_translate("MainWindow", "AL"))
         self.BL.setText(_translate("MainWindow", "BL"))
-        self.BX.setText(_translate("MainWindow", "BX Register"))
+        self.BX.setText(_translate("MainWindow", "BX - Bazowy"))
         self.BH.setText(_translate("MainWindow", "BH"))
         self.CL.setText(_translate("MainWindow", "CL"))
-        self.CX.setText(_translate("MainWindow", "CX Register"))
+        self.CX.setText(_translate("MainWindow", "CX - Licznik"))
         self.CH.setText(_translate("MainWindow", "CH"))
         self.DL.setText(_translate("MainWindow", "DL"))
-        self.DX.setText(_translate("MainWindow", "DX Register"))
+        self.DX.setText(_translate("MainWindow", "DX - Danych"))
         self.DH.setText(_translate("MainWindow", "DH"))
         for key in self.buttons.keys():
             for i in range(8):
@@ -1358,13 +1392,13 @@ class Ui_MainWindow(object):
         self.dec["AH"].setText(_translate("MainWindow", "0"))
         self.restAH.setText(_translate("MainWindow", "Reset"))
         self.Komendy.setText(
-            _translate("MainWindow", "<html><head/><body><p>Instruction</p><p><br/></p></body></html>"))
-        self.Clear.setText(_translate("MainWindow", "Clear"))
-        self.Execute.setText(_translate("MainWindow", "Execute"))
-        self.Save.setText(_translate("MainWindow", "Save to file"))
-        self.Load.setText(_translate("MainWindow", "Load from file"))
-        self.ExecuteStep.setText(_translate("MainWindow", "Step exec."))
-        self.Restart.setText(_translate("MainWindow", "Show full program"))
+            _translate("MainWindow", "<html><head/><body><p>Instrukcje</p><p><br/></p></body></html>"))
+        self.Clear.setText(_translate("MainWindow", "Czyść"))
+        self.Execute.setText(_translate("MainWindow", "Wykonaj"))
+        self.Save.setText(_translate("MainWindow", "Zapisz do pliku"))
+        self.Load.setText(_translate("MainWindow", "Wczytaj z pliku"))
+        self.ExecuteStep.setText(_translate("MainWindow", "Zrób krok"))
+        self.Restart.setText(_translate("MainWindow", "Pokaż program"))
         self.opt1.setItemText(0, _translate("MainWindow", "AH"))
         self.opt1.setItemText(1, _translate("MainWindow", "AL"))
         self.opt1.setItemText(2, _translate("MainWindow", "BH"))
@@ -1390,12 +1424,12 @@ class Ui_MainWindow(object):
         self.dest.setItemText(9, _translate("MainWindow", "BX"))
         self.dest.setItemText(10, _translate("MainWindow", "CX"))
         self.dest.setItemText(11, _translate("MainWindow", "DX"))
-        self.Add.setText(_translate("MainWindow", "Add"))
+        self.Add.setText(_translate("MainWindow", "Dodaj"))
         self.instr.setItemText(0, _translate("MainWindow", "MOV"))
         self.instr.setItemText(1, _translate("MainWindow", "ADD"))
         self.instr.setItemText(2, _translate("MainWindow", "SUB"))
-        self.instr.setItemText(3, _translate("MainWindow", "PUSH"))
-        self.instr.setItemText(4, _translate("MainWindow", "POP"))
+        # self.instr.setItemText(3, _translate("MainWindow", "PUSH"))
+        # self.instr.setItemText(4, _translate("MainWindow", "POP"))
         self.opt2.setText(_translate("MainWindow", "0"))
         self.Decimal2.setText(_translate("MainWindow", "<html><head/><body><p>Decimal</p><p><br/></p></body></html>"))
         self.restAL.setText(_translate("MainWindow", "Reset"))
@@ -1417,19 +1451,22 @@ class Ui_MainWindow(object):
         self.dec["CX"].setText(_translate("MainWindow", "0"))
         self.dec["DX"].setText(_translate("MainWindow", "0"))
         self.Decimal1.setText(_translate("MainWindow", "<html><head/><body><p>Decimal</p><p><br/></p></body></html>"))
-        self.InteruptLabel.setText(_translate("MainWindow", "<html><head/><body><p>Interrupts</p></body></html>"))
-        self.Interrupt.setItemText(0, _translate("MainWindow", "INT11"))
-        self.Interrupt.setItemText(1, _translate("MainWindow", "INT13"))
-        self.Interrupt.setItemText(2, _translate("MainWindow", "INT15"))
-        self.Interrupt.setItemText(3, _translate("MainWindow", "INT17"))
-        self.AddInterrupt.setText(_translate("MainWindow", "Add"))
-        self.StackLabel.setText(_translate("MainWindow", "<html><head/><body><p>Stack</p><p><br/></p></body></html>"))
-        self.label.setText(_translate("MainWindow", ":"))
-        self.TimeLabel.setText(_translate("MainWindow", "<html><head/><body><p>Time<br/></p></body></html>"))
-        self.Date.setText(_translate("MainWindow", "2021-03-27"))
+
+        # self.InteruptLabel.setText(_translate("MainWindow", "<html><head/><body><p>Interrupts</p></body></html>"))
+        # self.Interrupt.setItemText(0, _translate("MainWindow", "INT11"))
+        # self.Interrupt.setItemText(1, _translate("MainWindow", "INT13"))
+        # self.Interrupt.setItemText(2, _translate("MainWindow", "INT15"))
+        # self.Interrupt.setItemText(3, _translate("MainWindow", "INT17"))
+        # self.AddInterrupt.setText(_translate("MainWindow", "Add"))
+
+        # self.StackLabel.setText(_translate("MainWindow", "<html><head/><body><p>Stack</p><p><br/></p></body></html>"))
+        # self.label.setText(_translate("MainWindow", ":"))
+        # self.TimeLabel.setText(_translate("MainWindow", "<html><head/><body><p>Time<br/></p></body></html>"))
+        self.Date.setText(_translate("MainWindow", "2023-06-15"))
         self.Info.setText(_translate("MainWindow", "<html><head/><body><p>Info:</p><p><br/></p></body></html>"))
         self.Msg.setText(_translate("MainWindow", "<html><head/><body><p>-</p><p><br/></p></body></html>"))
-        self.menuOpen_interrupts_description.setTitle(_translate("MainWindow", "Interrupts - manual"))
+
+        # self.menuOpen_interrupts_description.setTitle(_translate("MainWindow", "Interrupts - manual"))
 
 
 if __name__ == "__main__":
